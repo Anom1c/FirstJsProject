@@ -1,42 +1,43 @@
 $(document).ready(function () {
     let canvas;
     let ctx;
-    let snakeSize;
-    let snakePart = {x: 0, y: 0};
+    let snakeSideLength;
+    let snakeHead = {x: 0, y: 0};
     let fieldSize ;
-    let direction ;
-    let actionTimeOut;
+    let directionFn ;
+    let actionInterval;
     console.log(`Window Ready`);
 
     function init() {
         canvas = $("#myCanvas");
         ctx = canvas[0].getContext('2d');
         fieldSize = canvas.width();
-        snakeSize = fieldSize / 20;
-        snakePart.x = fieldSize / 2;
-        snakePart.y = fieldSize / 2;
-        direction = left;
-        drawRect(snakePart);
+        snakeSideLength = fieldSize / 20;
+        snakeHead.x = fieldSize / 2;
+        snakeHead.y = fieldSize / 2;
+        directionFn = left;
+        drawRect(snakeHead);
         window.addEventListener("keydown", update, false);
         const triggerSnake = document.querySelector("#stopSnake")
         // triggerSnake.addEventListener("click", run, false);
-        render();
         run();
 
     }
     function moveSnakePart(){
-        direction(snakePart);
-        render();
-        checkForBorder(snakePart);
+        directionFn(snakeHead);
+        if (checkForBorder(snakeHead)) {
+            render();
+        }
+
     }
 
 
     function run(){
-         actionTimeOut = setTimeout(function (){
+         actionInterval = setInterval(function (){
             moveSnakePart();
-            run();
-        },250);
-
+       //     run();
+        },200);
+        console.log('created timeout === ', actionInterval);
     }
     /**
      *
@@ -45,7 +46,7 @@ $(document).ready(function () {
     function drawRect(snakePart) {
         console.log('drawRect was called with x - %d, y - %d', snakePart.x, snakePart.y);
         ctx.fillStyle = '#666';
-        ctx.fillRect(snakePart.x, snakePart.y, snakeSize, snakeSize);
+        ctx.fillRect(snakePart.x, snakePart.y, snakeSideLength, snakeSideLength);
     }
 
     $(window).on('load', function () {
@@ -55,51 +56,57 @@ $(document).ready(function () {
 
     function update(event) {
         if (event.keyCode == 38) {
-            direction = up; //going up
+            directionFn = up; //going up
         }
         if (event.keyCode == 40) {
-            direction = down; //going down
+            directionFn = down; //going down
         }
         if (event.keyCode == 37) {
-            direction = left; //going left
+            directionFn = left; //going left
         }
         if (event.keyCode == 39) {
-            direction = right; //going right
+            directionFn = right; //going right
         }
-        render();
+    //    render();
 
     }
 
     function render() {
         ctx.clearRect(0, 0, 600, 600);
-        drawRect(snakePart);
+        drawRect(snakeHead);
 
     }
     function checkForBorder(snakePart) {
-        console.log(snakePart.x)
-        if (snakePart.x === fieldSize - snakeSize || snakePart.x === 0 ||
-            snakePart.y === fieldSize - snakeSize || snakePart.y === 0)
+        console.log('checkForBorder=====', actionInterval)
+     //   clearTimeout(actionTimeOut);
+        if (snakePart.x > fieldSize - snakeSideLength || snakePart.x < 0 ||
+            snakePart.y > fieldSize - snakeSideLength || snakePart.y < 0)
         {
-            clearTimeout(actionTimeOut);
-            return alert("Snake faced with border");
+            console.log(`clearTimeout called --- `, actionInterval);
+            clearInterval(actionInterval);
+            setTimeout(() => {
+                alert("Snake faced with border");
+            })
+            return false;
         }
+        return true;
     }
 
 
     function up(snakePart){
-        snakePart.y = snakePart.y - snakeSize ;
+        snakePart.y = snakePart.y - snakeSideLength ;
         return snakePart;
     }
     function down(snakePart){
-        snakePart.y = snakePart.y + snakeSize
+        snakePart.y = snakePart.y + snakeSideLength
         return snakePart;
     }
     function left(snakePart){
-        snakePart.x = snakePart.x - snakeSize;
+        snakePart.x = snakePart.x - snakeSideLength;
         return snakePart;
     }
     function right(snakePart){
-        snakePart.x = snakePart.x + snakeSize;
+        snakePart.x = snakePart.x + snakeSideLength;
         return snakePart;
     }
 
