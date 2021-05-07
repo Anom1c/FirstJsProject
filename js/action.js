@@ -2,19 +2,19 @@ $(document).ready(function () {
     let canvas;
     let ctx;
     let snakeSideLength;
-    let snakeHead = [{x: 0, y: 0}];
-    let food = {x: 0,y: 0};
-    let fieldSize ;
-    let directionFn ;
+    let snake = [{x: 0, y: 0}];
+    let food = {x: 0, y: 0};
+    let fieldSize;
+    let directionFn;
     let actionInterval;
     let visibleZone;
     let maxMultipleNum;
-    let head;
-    const direction = [left,right,up,down]
+    const direction = [left, right, up, down]
 
-    function getRandomInt(max ,num = 0) {
+    function getRandomInt(max, num = 0) {
         return Math.floor(Math.random() * max) + num;
     }
+
     console.log(`Window Ready`);
 
     $(window).on('load', function () {
@@ -29,55 +29,62 @@ $(document).ready(function () {
         snakeSideLength = fieldSize / 20; // размер сегмента
         visibleZone = fieldSize - snakeSideLength;
         maxMultipleNum = visibleZone / snakeSideLength;
-        snakeHead[0].x = snakeSideLength * getRandomInt(maxMultipleNum); // coordinates
-        snakeHead[0].y = snakeSideLength * getRandomInt(maxMultipleNum); // coordinates
+        snake[0].x = snakeSideLength * getRandomInt(maxMultipleNum); // coordinates
+        snake[0].y = snakeSideLength * getRandomInt(maxMultipleNum); // coordinates
         food.x = snakeSideLength * getRandomInt(maxMultipleNum);
         food.y = snakeSideLength * getRandomInt(maxMultipleNum);
         directionFn = direction[getRandomInt(4)];
-        drawRect(snakeHead); // render cube
-        // drawRect(food);
+        drawRect(snake); // render cube
         window.addEventListener("keydown", update, false); // почитать
         const triggerSnake = document.querySelector("#stopSnake") // почитать
         // triggerSnake.addEventListener("click", run, false);
-
         run();
-
     }
-    function moveSnakePart(){
-        directionFn(snakeHead);
-        for (let i = 0 ; i < snakeHead.length ; i++) {
-            head = snakeHead[0];
 
-        }
-        if (checkForBorder(snakeHead)) {
+    function moveSnakePart() {
+        directionFn(snake);
+        if (checkForBorder(snake)) {
             render();
         }
     }
 
+    function moveCordinates(array) {
+        for (let i = array.length - 1; i >= 1; i--) {
+            array[i].x = array[i - 1].x
+            array[i].y = array[i - 1].y
+        }
+        return array;
+    }
 
-
-    function eatFood (snakeHead,food) {
-        if ( snakeHead[0].x === food.x && snakeHead[0].y === food.y ) {
-            snakeHead.push(food) ;
+    function eatFood(snakeHead, food) {
+        if (snakeHead[0].x === food.x && snakeHead[0].y === food.y) {
+            snakeHead.push({x: food.x, y: food.y});
             number = 0;
             console.log('Eaten');
+            console.log(snakeHead);
+            console.log(food);
+            food.x = snakeSideLength * getRandomInt(maxMultipleNum);
+            food.y = snakeSideLength * getRandomInt(maxMultipleNum);
         }
     }
 
-let number = 0;
-    function run(){
-         actionInterval = setInterval(function (){
-            moveSnakePart();
-            number = number === 5? 5:number +1;
-            console.log('iter',number)
-             if( number >= 5  ){
-               drawRect(food);
-               eatFood(snakeHead,food);
-             }
+    let number = 0;
 
-        },200);
+    function run() {
+        actionInterval = setInterval(function () {
+            moveSnakePart();
+            snake = moveCordinates(snake);
+            number = number === 5 ? 5 : number + 1;
+            console.log('iter', number)
+            if (number >= 5) {
+                drawRect(food);
+                eatFood(snake, food);
+            }
+
+        }, 200);
         console.log('created timeout === ', actionInterval);
     }
+
     /**
      *
      * @param [{x: number, y: number}]snakePart
@@ -91,9 +98,10 @@ let number = 0;
             ctx.fillStyle = '#666'
             console.log('drawRect was called with x - %d, y - %d', part.x, part.y);
             ctx.fillRect(part.x, part.y, snakeSideLength, snakeSideLength);
-        } )
+        })
 
     }
+
     /**
      *
      * @param {{x: number, y: number}}obj
@@ -115,21 +123,20 @@ let number = 0;
         if (event.keyCode == 39) {
             directionFn = right; //going right
         }
-    //    render();
+        //    render();
 
     }
 
     function render() {
         ctx.clearRect(0, 0, fieldSize, fieldSize);
-        drawRect(snakeHead);
+        drawRect(snake);
         // drawRect(food);
     }
 
     function checkForBorder(snakePart) {
-     //   clearTimeout(actionTimeOut);
+        //   clearTimeout(actionTimeOut);
         if (snakePart[0].x > fieldSize - snakeSideLength || snakePart[0].x < 0 ||
-            snakePart[0].y > fieldSize - snakeSideLength || snakePart[0].y < 0)
-        {
+            snakePart[0].y > fieldSize - snakeSideLength || snakePart[0].y < 0) {
             console.log(`clearTimeout called --- `, actionInterval);
             clearInterval(actionInterval); // почитать
             setTimeout(() => {
@@ -141,19 +148,22 @@ let number = 0;
     }
 
 
-    function up(snakePart){
-        snakePart[0].y = snakePart[0].y - snakeSideLength ;
+    function up(snakePart) {
+        snakePart[0].y = snakePart[0].y - snakeSideLength;
         return snakePart;
     }
-    function down(snakePart){
+
+    function down(snakePart) {
         snakePart[0].y = snakePart[0].y + snakeSideLength
         return snakePart;
     }
-    function left(snakePart){
+
+    function left(snakePart) {
         snakePart[0].x = snakePart[0].x - snakeSideLength;
         return snakePart;
     }
-    function right(snakePart){
+
+    function right(snakePart) {
         snakePart[0].x = snakePart[0].x + snakeSideLength;
         return snakePart;
     }
